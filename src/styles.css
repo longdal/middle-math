@@ -43,3 +43,49 @@ body {
 .pwa-install:active {
   transform: translateY(1px);
 }
+
+.sync-panel {
+  position: fixed;
+  z-index: 10000;
+  left: max(12px, env(safe-area-inset-left));
+  top: max(12px, env(safe-area-inset-top));
+  width: min(430px, calc(100vw - 24px));
+  font-size: 14px;
+}
+
+.sync-toggle {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 750;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+  cursor: pointer;
+}
+
+.sync-body {
+  margin-top: 8px;
+  border: 1px solid #dbe1ea;
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+}
+
+.sync-section + .sync-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.sync-title { font-weight: 800; color: #111827; margin-bottom: 5px; }
+.sync-status { color: #475569; font-size: 12px; margin: 5px 0 8px; }
+.sync-help { color: #64748b; font-size: 12px; line-height: 1.45; margin-top: 7px; }
+.sync-warning { color: #92400e; background: #fffbeb; border-radius: 8px; padding: 8px; font-size: 12px; line-height: 1.45; margin: 7px 0; }
+.sync-message { margin-top: 12px; padding: 9px 10px; border-radius: 8px; background: #eff6ff; color: #1e40af; font-size: 12px; line-height: 1.45; }
+.sync-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.sync-actions button { border: 0; border-radius: 8px; padding: 8px 10px; background: #2563eb; color: white; font-weight: 700; cursor: pointer; }
+.sync-actions button.secondary-action { background: #e5e7eb; color: #334155; }
+.sync-actions button:disabled { opacity: 0.45; cursor: default; }
+.secret-input { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 9px; padding: 10px; font: inherit; }

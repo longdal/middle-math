@@ -64,31 +64,33 @@
 
   <section class="card hidden" id="review">
     <div class="row" style="justify-content:space-between;align-items:center">
-      <div class="title" style="margin:0">맞춤 보완 학습</div>
+      <div>
+        <div class="title" style="margin:0">맞춤 보완 학습</div>
+        <div class="muted" id="reviewConceptTitle">취약 개념을 순서대로 모두 확인합니다.</div>
+      </div>
       <div class="muted" id="reviewPageLabel">1 / 3</div>
     </div>
-    <div class="progress" style="margin:10px 0 16px"><div class="bar" id="reviewBar" style="width:33%"></div></div>
+    <div class="progress" style="margin:10px 0 12px"><div class="bar" id="reviewBar" style="width:33%"></div></div>
+    <div id="reviewQueueStatus" class="note" style="margin-bottom:14px"></div>
 
     <div class="reviewPage" data-page="0">
-      <p><b>1. 내심과 각의 이등분선</b></p>
+      <div class="title" id="reviewLesson1Title"></div>
       <div class="figure" id="reviewConceptFigure"></div>
-      <div class="note"><b>그림으로 이해하기</b><br>I는 삼각형의 세 <b>각의 이등분선</b>이 만나는 점입니다. 따라서 BI는 ∠ABC를 정확히 두 부분으로 나눕니다.<br><b>∠ABI = ∠IBC</b> 입니다.</div>
-      <p style="line-height:1.65"><b>핵심 체크</b><br>① 문제에서 “내심 I”가 보이면 각 꼭짓점과 I를 이은 선은 각의 이등분선입니다.<br>② 전체 각이 주어지면 반으로 나누어 필요한 각을 찾을 수 있습니다.</p>
+      <div class="note" id="reviewLesson1Text"></div>
     </div>
 
     <div class="reviewPage hidden" data-page="1">
-      <p><b>2. 내심에서 세 변까지의 거리</b></p>
+      <div class="title" id="reviewLesson2Title"></div>
       <div class="figure" id="reviewDistanceFigure"></div>
-      <div class="note"><b>그림으로 이해하기</b><br>내심 I에서 세 변 AB, BC, CA에 수선을 내리면 그 길이는 모두 같습니다. 즉 내심은 <b>세 변에서 같은 거리</b>에 있습니다.</div>
-      <p style="line-height:1.65"><b>문제 풀이 순서</b><br>① I에서 각 변까지의 최단거리는 수선입니다.<br>② 세 수선의 길이는 서로 같습니다.<br>③ 길이 비교나 넓이 문제에서는 이 성질을 먼저 확인합니다.</p>
+      <div class="note" id="reviewLesson2Text"></div>
     </div>
 
     <div class="reviewPage hidden" data-page="2">
-      <div class="title">3. 확인 문제 <span class="stars">★★</span></div>
-      <div class="question">△ABC에서 I가 내심이고 ∠ABC=60°이면 ∠IBC는 몇 도인가?</div>
+      <div class="title" id="reviewCheckTitle">확인 문제</div>
+      <div class="question" id="reviewQuestion"></div>
       <div class="figure" id="reviewQuestionFigure"></div>
-      <div class="note" style="margin-bottom:10px"><b>생각 순서</b><br>① I가 내심 → BI는 ∠ABC의 이등분선<br>② ∠ABC=60° → 두 각의 크기는 서로 같음<br>③ ∠IBC의 크기를 계산</div>
-      <input id="reviewAnswer" type="text" placeholder="답 입력 (예: 30°)" />
+      <div class="note" id="reviewHint" style="margin-bottom:10px"></div>
+      <input id="reviewAnswer" type="text" placeholder="답 입력" />
       <div style="height:10px"></div><button id="reviewCheck" style="width:100%">이해 확인</button>
       <div id="reviewFeedback" style="margin-top:10px"></div>
     </div>
@@ -122,7 +124,7 @@ const qs=[
  {q:'△ABC에서 I가 내심이고 ∠A=80°일 때 ∠BIC의 크기를 구하여라.',a:['130','130°'],c:'내심 응용',s:'★★★',fig:'incenter80'},
  {q:'AB=AC인 △ABC에서 외심 O가 BC 위에 있다. ∠A의 크기를 구하여라.',a:['90','90°'],c:'조건 해석',s:'★★★★',fig:'diameterTriangle'}
 ];
-let idx=0, correct=0, conceptScores={};
+let idx=0, correct=0, conceptScores={}, attempts=[];
 const $=id=>document.getElementById(id);
 function show(id){$(id).classList.remove('hidden')}
 function hide(id){$(id).classList.add('hidden')}
@@ -314,28 +316,241 @@ function renderFigure(type,target='figure'){
  el.innerHTML=svg;el.classList.remove('hidden');
 }
 function loadQ(){let x=qs[idx];$('qno').textContent=`문제 ${idx+1} / 10`;$('stars').textContent=x.s;$('conceptLabel').textContent='개념: '+x.c;$('question').textContent=x.q;renderFigure(x.fig);$('bar').style.width=((idx+1)*10)+'%';$('answer').value='';$('preview').style.display='none';$('photo').value=''}
-function submit(){let x=qs[idx],v=$('answer').value.trim();let ok=x.loose?x.a.some(k=>v.includes(k)):x.a.includes(v);correct+=ok?1:0;conceptScores[x.c]=(conceptScores[x.c]||{n:0,k:0});conceptScores[x.c].n++;conceptScores[x.c].k+=ok?1:0;idx++; if(idx<qs.length) loadQ(); else finish()}
-function finish(){hide('quiz');show('result');let sc=correct*10;$('score').textContent=sc+'점';let pass=sc>=90;$('judge').textContent=pass?'심화 진입 가능':'개념 보완 필요';$('judge').className=pass?'ok':'warn';$('advancedBtn').disabled=!pass;$('advancedBtn').style.opacity=pass?1:.45;let html='<div class="title" style="margin-top:14px">개념별 상태</div>';Object.entries(conceptScores).forEach(([k,v])=>{let p=Math.round(v.k/v.n*100);html+=`<div class="concept"><div><div style="display:flex;justify-content:space-between"><span>${k}</span><span>${p}</span></div><div class="mini"><i style="width:${p}%"></i></div></div><div class="${p>=90?'ok':p>=70?'warn':'bad'}">${p>=90?'충분':p>=70?'보완':'취약'}</div></div>`});$('concepts').innerHTML=html;$('analysisText').innerHTML=pass?'기본 개념이 안정적입니다. 심화 단계에서는 여러 성질을 결합하는 문제와 풀이 논리성을 확인합니다.':'오답이 나온 개념을 우선 보완한 뒤 90점 이상을 확인하고 심화 단계로 이동하도록 설계합니다. 실제 앱에서는 풀이 사진을 AI가 분석해 <b>개념 부족 / 조건 해석 / 계산 실수 / 풀이 전략</b>으로 분류합니다.'}
+function makeAttemptId(){return 'A-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
+async function submit(){
+ let x=qs[idx],v=$('answer').value.trim();
+ let ok=x.loose?x.a.some(k=>v.includes(k)):x.a.includes(v);
+ const photoFile=$('photo').files&&$('photo').files[0]?$('photo').files[0]:undefined;
+ const attempt={
+   attemptId:makeAttemptId(),problemId:`diagnostic-${idx+1}`,answer:v,correct:ok,
+   concept:x.c,difficulty:x.s,question:x.q,createdAt:new Date().toISOString(),
+   photo:null,analysis:null
+ };
+ attempts.push(attempt);
+ correct+=ok?1:0;conceptScores[x.c]=(conceptScores[x.c]||{n:0,k:0});conceptScores[x.c].n++;conceptScores[x.c].k+=ok?1:0;
+ const originalSubmit=$('submitBtn').textContent, originalSkip=$('skipBtn').textContent;
+ $('submitBtn').disabled=true;$('skipBtn').disabled=true;
+ if(window.parent&&window.parent!==window&&window.parent.middleMathHost&&typeof window.parent.middleMathHost.onAttempt==='function'){
+   $('submitBtn').textContent=photoFile?'사진 저장 중…':'답안 저장 중…';
+   try{
+     const photo=await window.parent.middleMathHost.onAttempt({...attempt,photoFile});
+     if(photo)attachAttemptPhoto(attempt.attemptId,photo);
+   }catch(e){console.warn('Drive 자동 저장 실패',e)}
+ }
+ $('submitBtn').textContent=originalSubmit;$('skipBtn').textContent=originalSkip;$('submitBtn').disabled=false;$('skipBtn').disabled=false;
+ idx++; if(idx<qs.length) loadQ(); else finish()
+}
+function conceptPercent(v){return Math.round(v.k/v.n*100)}
+function weakConceptNames(){return Object.entries(conceptScores).filter(([,v])=>conceptPercent(v)<90).map(([k])=>k)}
+function renderResultConcepts(){let html='<div class="title" style="margin-top:14px">개념별 상태</div>';Object.entries(conceptScores).forEach(([k,v])=>{let p=conceptPercent(v);html+=`<div class="concept"><div><div style="display:flex;justify-content:space-between"><span>${k}</span><span>${p}</span></div><div class="mini"><i style="width:${p}%"></i></div></div><div class="${p>=90?'ok':p>=70?'warn':'bad'}">${p>=90?'충분':p>=70?'보완':'취약'}</div></div>`});$('concepts').innerHTML=html}
+function finish(){hide('quiz');show('result');let sc=correct*10;const weak=weakConceptNames();const pass=sc>=90&&weak.length===0;$('score').textContent=sc+'점';$('judge').textContent=pass?'심화 진입 가능':`보완 필요 · ${weak.length}개 개념`;$('judge').className=pass?'ok':'warn';$('advancedBtn').disabled=!pass;$('advancedBtn').style.opacity=pass?1:.45;$('reviewBtn').disabled=weak.length===0;$('reviewBtn').style.opacity=weak.length===0?.45:1;renderResultConcepts();$('analysisText').innerHTML=pass?'모든 핵심 개념이 90점 이상입니다. 이제 심화 단계로 이동합니다.':`총점만 보는 것이 아니라 <b>${weak.join(', ')}</b>을(를) 각각 보완합니다. 각 취약 개념은 설명 → 예제 → 확인 문제 2개를 모두 통과해야 다음 개념으로 넘어갑니다. 모든 취약 개념을 끝내면 단원 재평가를 다시 진행합니다.`}
 $('startBtn').onclick=()=>{hide('setup');show('quiz');loadQ()};$('submitBtn').onclick=submit;$('skipBtn').onclick=submit;
 $('photo').onchange=e=>{let f=e.target.files[0];if(!f)return;let u=URL.createObjectURL(f);$('preview').src=u;$('preview').style.display='block'};
-let reviewPage=0;
+
+const remediationCatalog={
+ '이등변삼각형':{
+   lesson1:{title:'1. 이등변삼각형의 두 밑각',fig:{shape:'isosceles',equalSides:['AB','AC'],givenAngles:{B:65},unknownAngles:['A']},text:'<b>AB = AC</b>이면 밑변은 BC이고 두 밑각 <b>∠B와 ∠C가 같습니다.</b> 한 밑각이 주어지면 다른 밑각도 같은 크기입니다.'},
+   lesson2:{title:'2. 꼭짓각과 밑각 연결',fig:{shape:'isosceles',equalSides:['AB','AC'],givenAngles:{A:40},unknownAngles:['B']},text:'삼각형의 세 내각의 합은 180°입니다. 꼭짓각을 빼고 남은 각을 2로 나누면 밑각을 구할 수 있습니다.'},
+   checks:[
+    {q:'AB=AC인 △ABC에서 ∠B=55°일 때 ∠A는?',a:['70','70°'],fig:{shape:'isosceles',equalSides:['AB','AC'],givenAngles:{B:55},unknownAngles:['A']},hint:'∠B=∠C임을 먼저 표시합니다.',explain:'∠C=55°이므로 ∠A=180°-55°-55°=70°입니다.'},
+    {q:'AB=AC인 △ABC에서 ∠A=36°일 때 ∠B는?',a:['72','72°'],fig:{shape:'isosceles',equalSides:['AB','AC'],givenAngles:{A:36},unknownAngles:['B']},hint:'두 밑각의 합은 180°-36°입니다.',explain:'두 밑각의 합은 144°이고 서로 같으므로 ∠B=72°입니다.'}
+   ]
+ },
+ '외심':{
+   lesson1:{title:'1. 외심의 정의',fig:'circumcenter',text:'삼각형의 <b>세 변의 수직이등분선</b>이 만나는 점을 외심 O라고 합니다.'},
+   lesson2:{title:'2. 직각삼각형의 외심',fig:'rightCircum',text:'직각삼각형에서는 <b>빗변의 중점</b>이 외심입니다. 이 점에서 세 꼭짓점까지의 거리가 같습니다.'},
+   checks:[
+    {q:'삼각형의 세 변의 수직이등분선이 만나는 점은?',a:['외심'],fig:'circumcenter',hint:'변을 반으로 나누면서 수직인 선들의 교점을 생각합니다.',explain:'세 변의 수직이등분선의 교점은 외심입니다.'},
+    {q:'직각삼각형에서 외심은 어느 변의 중점인가?',a:['빗변','빗변의 중점'],loose:true,fig:'rightCircum',hint:'직각의 맞은편에 있는 가장 긴 변을 봅니다.',explain:'직각삼각형의 외심은 빗변의 중점입니다.'}
+   ]
+ },
+ '내심':{
+   lesson1:{title:'1. 내심과 각의 이등분선',fig:'reviewIncenterConcept',text:'내심 I는 삼각형의 <b>세 각의 이등분선</b>의 교점입니다. 따라서 BI는 ∠B를 똑같이 둘로 나눕니다.'},
+   lesson2:{title:'2. 내심을 각도 문제에 적용',fig:'reviewIncenterQuestion',text:'전체 각이 주어지면 내심으로 연결된 선이 그 각을 절반으로 나눈다는 사실을 바로 적용합니다.'},
+   checks:[
+    {q:'△ABC에서 I가 내심이고 ∠ABC=60°이면 ∠IBC는?',a:['30','30°'],fig:'reviewIncenterQuestion',hint:'BI는 ∠ABC의 이등분선입니다.',explain:'60°를 똑같이 둘로 나누므로 ∠IBC=30°입니다.',solutionFig:'reviewIncenterSolution'},
+    {q:'△ABC에서 I가 내심이고 ∠ABC=80°이면 ∠ABI는?',a:['40','40°'],fig:'incenter70',hint:'수치가 달라도 내심의 역할은 같습니다.',explain:'BI가 ∠ABC를 이등분하므로 80°÷2=40°입니다.'}
+   ]
+ },
+ '외심 성질':{
+   lesson1:{title:'1. 외심에서 꼭짓점까지의 거리',fig:'circumcenter',text:'외심 O는 세 꼭짓점 A, B, C에서 <b>같은 거리</b>에 있으므로 OA=OB=OC입니다.'},
+   lesson2:{title:'2. 왜 같은 거리인가?',fig:'circumcenter',text:'수직이등분선 위의 점은 선분의 양 끝점에서 같은 거리에 있습니다. 외심은 세 수직이등분선 위에 있으므로 세 꼭짓점까지의 거리가 같습니다.'},
+   checks:[
+    {q:'외심 O에서 세 꼭짓점까지의 거리 관계를 기호로 쓰면?',a:['OA=OB=OC','oa=ob=oc'],loose:true,fig:'circumcenter',hint:'A, B, C까지의 거리가 모두 같습니다.',explain:'외심의 기본 성질은 OA=OB=OC입니다.'},
+    {q:'O가 AB의 수직이등분선 위에 있다면 OA와 OB의 관계는?',a:['OA=OB','oa=ob','같다','같음'],loose:true,fig:'circumcenter',hint:'수직이등분선 위의 점의 성질을 사용합니다.',explain:'수직이등분선 위의 점은 양 끝점에서 같은 거리에 있으므로 OA=OB입니다.'}
+   ]
+ },
+ '내심 성질':{
+   lesson1:{title:'1. 내심에서 세 변까지의 거리',fig:'incenterDistances',text:'내심 I에서 세 변에 내린 <b>수선의 길이</b>는 모두 같습니다.'},
+   lesson2:{title:'2. 거리 문제에서의 활용',fig:'incenterDistances',text:'한 변까지의 수선 길이를 알면 나머지 두 변까지의 거리도 같습니다. 길이 비교나 넓이 문제에 자주 사용됩니다.'},
+   checks:[
+    {q:'내심 I에서 세 변에 내린 수선의 길이는 서로 어떤 관계인가?',a:['같다','같음','서로 같다'],loose:true,fig:'incenterDistances',hint:'내심은 세 변에서 같은 거리에 있습니다.',explain:'세 수선의 길이는 모두 같습니다.'},
+    {q:'내심 I에서 AB까지의 거리가 4cm라면 BC까지의 거리는?',a:['4','4cm','4 cm'],loose:true,fig:'incenterDistances',hint:'세 변까지의 거리가 모두 같습니다.',explain:'AB까지의 거리가 4cm이면 다른 변까지의 거리도 4cm입니다.'}
+   ]
+ },
+ '내심 응용':{
+   lesson1:{title:'1. ∠BIC와 ∠A의 관계',fig:'incenter80',text:'내심 I에 대해 <b>∠BIC = 90° + 1/2∠A</b> 관계를 사용할 수 있습니다.'},
+   lesson2:{title:'2. 관계식을 거꾸로 사용',fig:'advancedIncenter',text:'∠BIC가 주어지면 90°를 빼고 2배하여 ∠A를 찾을 수 있습니다.'},
+   checks:[
+    {q:'I가 내심이고 ∠A=60°일 때 ∠BIC는?',a:['120','120°'],fig:'incenter80',hint:'90° + ∠A의 절반을 계산합니다.',explain:'90°+30°=120°입니다.'},
+    {q:'I가 내심이고 ∠BIC=125°일 때 ∠A는?',a:['70','70°'],fig:'advancedIncenter',hint:'125°-90°=35°를 먼저 계산합니다.',explain:'∠A/2=35°이므로 ∠A=70°입니다.'}
+   ]
+ },
+ '조건 해석':{
+   lesson1:{title:'1. 외심이 변 위에 있다는 조건',fig:'diameterTriangle',text:'외심이 BC 위에 있다는 것은 BC가 외접원의 지름 역할을 하는 상황입니다. 이때 ∠A는 직각이 됩니다.'},
+   lesson2:{title:'2. 조건을 결합하기',fig:'diameterTriangle',text:'AB=AC 같은 조건과 외심의 위치 조건을 함께 읽어야 합니다. 그림에 없는 직각을 조건으로부터 스스로 발견하는 것이 핵심입니다.'},
+   checks:[
+    {q:'△ABC의 외심이 BC 위에 있다면 ∠A는?',a:['90','90°'],fig:'diameterTriangle',hint:'직각삼각형의 외심은 빗변의 중점입니다.',explain:'BC가 빗변이므로 ∠A=90°입니다.'},
+    {q:'AB=AC이고 ∠A=90°인 △ABC에서 ∠B는?',a:['45','45°'],fig:'diameterTriangle',hint:'두 밑각이 같고 두 각의 합은 90°입니다.',explain:'∠B=∠C이고 합이 90°이므로 각각 45°입니다.'}
+   ]
+ }
+};
+
+let weakQueue=[], currentWeakIndex=0, reviewPage=0, reviewCheckIndex=0, reviewCheckCorrect=0, reviewMastery={};
+function getReviewConfig(){return remediationCatalog[weakQueue[currentWeakIndex]]||remediationCatalog['내심']}
+function renderQueueStatus(){
+  if(!weakQueue.length){$('reviewQueueStatus').innerHTML='<span class="ok"><b>보완할 개념이 없습니다.</b></span>';return}
+  const items=weakQueue.map((name,i)=>{
+    const st=reviewMastery[name]==='done'?'✅':i===currentWeakIndex?'▶':'○';
+    return `${st} ${name}`;
+  });
+  $('reviewQueueStatus').innerHTML=`<b>보완 진행 ${Math.min(currentWeakIndex+1,weakQueue.length)} / ${weakQueue.length}</b><br>${items.join(' · ')}`;
+}
+function renderReviewCheck(){
+  const cfg=getReviewConfig(), chk=cfg.checks[reviewCheckIndex];
+  $('reviewCheckTitle').innerHTML=`3. 확인 문제 ${reviewCheckIndex+1} / ${cfg.checks.length} <span class="stars">★★</span>`;
+  $('reviewQuestion').textContent=chk.q;
+  $('reviewHint').innerHTML='<b>힌트</b><br>'+chk.hint;
+  $('reviewAnswer').value='';$('reviewFeedback').innerHTML='';
+  renderFigure(chk.fig,'reviewQuestionFigure');
+}
 function showReviewPage(n){
   reviewPage=Math.max(0,Math.min(2,n));
+  const name=weakQueue[currentWeakIndex], cfg=getReviewConfig();
+  $('reviewConceptTitle').textContent=name?`현재 개념: ${name}`:'보완 완료';
   document.querySelectorAll('.reviewPage').forEach((el,i)=>el.classList.toggle('hidden',i!==reviewPage));
-  $('reviewPageLabel').textContent=(reviewPage+1)+' / 3';
-  $('reviewBar').style.width=((reviewPage+1)/3*100)+'%';
-  $('reviewPrev').disabled=reviewPage===0;
-  $('reviewPrev').style.opacity=reviewPage===0?.45:1;
-  $('reviewNext').textContent=reviewPage===1?'확인 문제로':reviewPage===2?'보완 학습 완료':'다음 개념';
-  if(reviewPage===0) renderFigure('reviewIncenterConcept','reviewConceptFigure');
-  if(reviewPage===1) renderFigure('incenterDistances','reviewDistanceFigure');
-  if(reviewPage===2) renderFigure('reviewIncenterQuestion','reviewQuestionFigure');
+  $('reviewPageLabel').textContent=(reviewPage+1)+' / 3';$('reviewBar').style.width=((reviewPage+1)/3*100)+'%';
+  $('reviewPrev').disabled=reviewPage===0;$('reviewPrev').style.opacity=reviewPage===0?.45:1;
+  $('reviewNext').disabled=false;$('reviewNext').style.opacity=1;
+  if(reviewPage===0){$('reviewLesson1Title').textContent=cfg.lesson1.title;$('reviewLesson1Text').innerHTML=cfg.lesson1.text;renderFigure(cfg.lesson1.fig,'reviewConceptFigure');$('reviewNext').textContent='다음 설명'}
+  if(reviewPage===1){$('reviewLesson2Title').textContent=cfg.lesson2.title;$('reviewLesson2Text').innerHTML=cfg.lesson2.text;renderFigure(cfg.lesson2.fig,'reviewDistanceFigure');$('reviewNext').textContent='확인 문제로'}
+  if(reviewPage===2){renderReviewCheck();$('reviewNext').textContent='확인 문제를 먼저 풀어주세요';$('reviewNext').disabled=true;$('reviewNext').style.opacity=.45}
+  renderQueueStatus();
 }
-$('reviewBtn').onclick=()=>{show('review');showReviewPage(0)};
+function startRemediation(){
+  weakQueue=weakConceptNames();currentWeakIndex=0;reviewPage=0;reviewCheckIndex=0;reviewCheckCorrect=0;reviewMastery={};
+  hide('result');show('review');
+  if(!weakQueue.length){$('reviewQueueStatus').innerHTML='<span class="ok">보완할 개념이 없습니다.</span>';return}
+  showReviewPage(0);
+}
+function answerMatches(chk,v){return chk.loose?chk.a.some(k=>v.toLowerCase().includes(String(k).toLowerCase())):chk.a.some(k=>v===k)}
+function completeCurrentConcept(){
+  const name=weakQueue[currentWeakIndex];reviewMastery[name]='done';
+  conceptScores[name]={n:1,k:1};
+  renderQueueStatus();
+  $('reviewFeedback').innerHTML=`<div class="note"><span class="ok"><b>${name} 보완 완료</b></span><br>확인 문제를 모두 통과했습니다.</div>`;
+  $('reviewNext').disabled=false;$('reviewNext').style.opacity=1;
+  $('reviewNext').textContent=currentWeakIndex<weakQueue.length-1?'다음 취약 개념':'단원 재평가 시작';
+}
+$('reviewBtn').onclick=startRemediation;
 $('reviewPrev').onclick=()=>showReviewPage(reviewPage-1);
-$('reviewNext').onclick=()=>{if(reviewPage<2)showReviewPage(reviewPage+1);else hide('review')};
-$('reviewCheck').onclick=()=>{let v=$('reviewAnswer').value.trim();let ok=v==='30'||v==='30°';$('reviewFeedback').innerHTML=(ok?'<span class="ok"><b>정답입니다.</b> BI는 ∠ABC의 이등분선이므로 60°를 30°와 30°로 나눕니다.</span>':'<span class="warn"><b>다시 확인해 보세요.</b> I가 내심이면 BI는 ∠ABC의 이등분선입니다. 60°를 두 개의 같은 각으로 나누어 보세요.</span>')+'<div class="figure" id="reviewSolutionFigure" style="margin-top:10px"></div><div class="note" style="margin-top:8px"><b>풀이 설명:</b> ∠ABI = ∠IBC이고, ∠ABC = ∠ABI + ∠IBC = 60°입니다. 따라서 각각 30°입니다.</div>';renderFigure('reviewIncenterSolution','reviewSolutionFigure')};
+$('reviewNext').onclick=()=>{
+  if(reviewPage<2){showReviewPage(reviewPage+1);return}
+  const currentName=weakQueue[currentWeakIndex];
+  if(reviewMastery[currentName]!=='done')return;
+  if(currentWeakIndex<weakQueue.length-1){currentWeakIndex++;reviewCheckIndex=0;reviewCheckCorrect=0;showReviewPage(0)}
+  else restartDiagnostic();
+};
+$('reviewCheck').onclick=()=>{
+  const cfg=getReviewConfig(), chk=cfg.checks[reviewCheckIndex], v=$('reviewAnswer').value.trim();
+  if(!v){$('reviewFeedback').innerHTML='<span class="warn">답을 입력해 주세요.</span>';return}
+  const ok=answerMatches(chk,v);
+  const solution=chk.solutionFig?`<div class="figure" id="reviewSolutionFigure" style="margin-top:10px"></div>`:'';
+  $('reviewFeedback').innerHTML=(ok?'<span class="ok"><b>정답입니다.</b></span>':'<span class="bad"><b>오답입니다.</b></span>')+`<div class="note" style="margin-top:8px"><b>설명:</b> ${chk.explain}</div>${solution}`;
+  if(chk.solutionFig)renderFigure(chk.solutionFig,'reviewSolutionFigure');
+  if(ok){
+    reviewCheckCorrect++;
+    if(reviewCheckIndex<cfg.checks.length-1){
+      reviewCheckIndex++;
+      $('reviewNext').disabled=false;$('reviewNext').style.opacity=1;$('reviewNext').textContent='다음 확인 문제';
+      $('reviewNext').onclick=()=>{showReviewPage(2);$('reviewNext').onclick=reviewNextHandler};
+    }else completeCurrentConcept();
+  }else{
+    reviewCheckIndex=0;reviewCheckCorrect=0;
+    $('reviewNext').disabled=false;$('reviewNext').style.opacity=1;$('reviewNext').textContent='개념 다시 보기';
+    $('reviewNext').onclick=()=>{showReviewPage(0);$('reviewNext').onclick=reviewNextHandler};
+  }
+};
+function reviewNextHandler(){
+  if(reviewPage<2){showReviewPage(reviewPage+1);return}
+  const currentName=weakQueue[currentWeakIndex];
+  if(reviewMastery[currentName]!=='done')return;
+  if(currentWeakIndex<weakQueue.length-1){currentWeakIndex++;reviewCheckIndex=0;reviewCheckCorrect=0;showReviewPage(0)} else restartDiagnostic();
+}
+$('reviewNext').onclick=reviewNextHandler;
+function restartDiagnostic(){
+  idx=0;correct=0;conceptScores={};weakQueue=[];currentWeakIndex=0;reviewPage=0;reviewCheckIndex=0;reviewCheckCorrect=0;reviewMastery={};
+  hide('review');hide('result');hide('advanced');show('quiz');loadQ();
+}
 $('advancedBtn').onclick=()=>{show('advanced');renderFigure('advancedIncenter','advancedFigure')};$('advancedCheck').onclick=()=>{let v=$('advancedAnswer').value.trim();let ok=v==='80'||v==='80°';$('advancedFeedback').innerHTML=(ok?'<span class="ok"><b>정답입니다.</b></span>':'<span class="bad"><b>오답입니다.</b></span>')+'<div class="note" style="margin-top:8px"><b>출제 의도:</b> 내심의 성질 ∠BIC = 90° + 1/2∠A 를 활용하거나 직접 각을 분해해 관계를 만들 수 있는지 확인합니다. 실제 버전에서는 업로드한 풀이 사진에서 어느 단계에서 논리가 끊겼는지 분석합니다.</div>'};
+
+function attachAttemptPhoto(attemptId,photo){
+  const attempt=attempts.find(a=>a.attemptId===attemptId);if(!attempt)return;
+  attempt.photo={id:photo.id,name:photo.name,mimeType:photo.mimeType||'',webViewLink:photo.webViewLink||'',createdTime:photo.createdTime||'',modifiedTime:photo.modifiedTime||''};
+}
+function attachAttemptAnalysis(attemptId,analysis){
+  const attempt=attempts.find(a=>a.attemptId===attemptId);if(!attempt)return;
+  attempt.analysis=cloneJson(analysis);
+}
+function currentLearningView(){
+  const ids=['setup','quiz','result','review','advanced'];
+  return ids.find(id=>!$(id).classList.contains('hidden'))||'setup';
+}
+function cloneJson(value){return JSON.parse(JSON.stringify(value))}
+function exportLearningState(){
+  return {
+    version:1,
+    unit:$('unit').value,
+    view:currentLearningView(),
+    idx,correct,conceptScores:cloneJson(conceptScores),
+    weakQueue:cloneJson(weakQueue),currentWeakIndex,reviewPage,reviewCheckIndex,reviewCheckCorrect,
+    reviewMastery:cloneJson(reviewMastery),
+    attempts:cloneJson(attempts),
+    advancedAnswer:$('advancedAnswer').value||'',
+    exportedAt:new Date().toISOString()
+  };
+}
+function importLearningState(state){
+  if(!state||state.version!==1)throw new Error('지원하지 않는 학습 상태 형식입니다.');
+  if(typeof state.unit==='string')$('unit').value=state.unit;
+  idx=Number.isInteger(state.idx)?Math.max(0,Math.min(qs.length-1,state.idx)):0;
+  correct=Number.isFinite(state.correct)?state.correct:0;
+  conceptScores=state.conceptScores&&typeof state.conceptScores==='object'?cloneJson(state.conceptScores):{};
+  weakQueue=Array.isArray(state.weakQueue)?cloneJson(state.weakQueue):[];
+  currentWeakIndex=Number.isInteger(state.currentWeakIndex)?Math.max(0,state.currentWeakIndex):0;
+  reviewPage=Number.isInteger(state.reviewPage)?Math.max(0,Math.min(2,state.reviewPage)):0;
+  reviewCheckIndex=Number.isInteger(state.reviewCheckIndex)?Math.max(0,state.reviewCheckIndex):0;
+  reviewCheckCorrect=Number.isFinite(state.reviewCheckCorrect)?state.reviewCheckCorrect:0;
+  reviewMastery=state.reviewMastery&&typeof state.reviewMastery==='object'?cloneJson(state.reviewMastery):{};
+  attempts=Array.isArray(state.attempts)?cloneJson(state.attempts):[];
+  ['setup','quiz','result','review','advanced'].forEach(hide);
+  const view=['setup','quiz','result','review','advanced'].includes(state.view)?state.view:'setup';
+  show(view);
+  if(view==='quiz')loadQ();
+  if(view==='result')finish();
+  if(view==='review'){
+    if(!weakQueue.length)weakQueue=weakConceptNames();
+    if(weakQueue.length){currentWeakIndex=Math.min(currentWeakIndex,weakQueue.length-1);showReviewPage(reviewPage)}
+    else {hide('review');show('result');finish()}
+  }
+  if(view==='advanced'){
+    renderFigure('advancedIncenter','advancedFigure');
+    $('advancedAnswer').value=typeof state.advancedAnswer==='string'?state.advancedAnswer:'';
+  }
+  window.scrollTo({top:0,behavior:'instant'});
+}
+window.middleMathApp={exportState:exportLearningState,importState:importLearningState,attachAttemptPhoto,attachAttemptAnalysis};
+
 </script>
 </body>
 </html>

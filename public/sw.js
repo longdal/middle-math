@@ -1,4 +1,4 @@
-const CACHE_NAME = 'middle-school-math-v1'
+const CACHE_NAME = 'middle-school-math-v4-drive-attempts'
 const scopeUrl = new URL(self.registration.scope)
 const appShell = [
   scopeUrl.href,
