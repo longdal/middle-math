@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>중2 수학 심화 학습 샘플</title>
+<style>
+  :root{--bg:#f6f7fb;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;--primary:#2563eb;--good:#059669;--warn:#d97706;--bad:#dc2626}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .app{max-width:760px;margin:0 auto;padding:16px 14px 40px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  h1{font-size:22px;margin:0} .badge{font-size:12px;background:#e0e7ff;color:#3730a3;padding:6px 9px;border-radius:999px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}.grow{flex:1}.muted{color:var(--muted);font-size:13px}.title{font-weight:700;margin-bottom:8px}.score{font-size:34px;font-weight:800}
+  select,input,textarea,button{font:inherit} select,input[type=text],textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+  button{border:0;border-radius:10px;padding:12px 14px;background:var(--primary);color:white;font-weight:700;cursor:pointer} button.secondary{background:#eef2ff;color:#3730a3} button.ghost{background:#f3f4f6;color:#374151}
+  .progress{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:var(--primary);width:10%}
+  .qno{font-size:13px;color:var(--muted)}.question{font-size:18px;line-height:1.6;margin:10px 0 14px}.stars{color:#d97706;font-size:15px}.figure{margin:10px 0 14px;padding:10px;border:1px solid var(--line);border-radius:14px;background:#fff;display:flex;justify-content:center}.figure svg{width:100%;max-width:360px;height:auto}.figure text{font-size:15px;font-weight:700;fill:#1f2937}.figure .guide{stroke:#94a3b8;stroke-dasharray:5 5}.figure .main{stroke:#1f2937;stroke-width:2.2;fill:none}.figure .mark{stroke:#2563eb;stroke-width:2;fill:none}.figure .point{fill:#2563eb}.figure .unknown{fill:#dc2626;font-size:18px;font-weight:800}
+  .upload{display:flex;align-items:center;gap:10px;padding:12px;border:1px dashed #cbd5e1;border-radius:12px;background:#fafafa}.upload input{width:auto}.preview{max-width:100%;max-height:220px;border-radius:10px;margin-top:10px;display:none}
+  .pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#f3f4f6;margin:3px 4px 3px 0;font-size:12px}.ok{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+  .hidden{display:none}.concept{display:grid;grid-template-columns:1fr 60px;gap:8px;align-items:center;margin:8px 0}.mini{height:7px;background:#e5e7eb;border-radius:999px;overflow:hidden}.mini>i{display:block;height:100%;background:#2563eb}
+  .footerActions{display:flex;gap:8px;margin-top:14px}.footerActions button{flex:1}.note{padding:12px;border-left:4px solid #2563eb;background:#eff6ff;border-radius:8px;font-size:14px;line-height:1.55}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><h1>중2 수학 심화 학습</h1><span class="badge">2학년 2학기</span></div>
+
+  <section class="card" id="setup">
+    <div class="title">단원 선택</div>
+    <select id="unit">
+      <option>삼각형의 성질</option>
+      <option>사각형의 성질</option>
+      <option>도형의 닮음</option>
+      <option>피타고라스 정리</option>
+      <option>경우의 수와 확률</option>
+    </select>
+    <div style="height:10px"></div>
+    <button id="startBtn" style="width:100%">진단 평가 시작</button>
+  </section>
+
+  <section class="card hidden" id="quiz">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div><div class="qno" id="qno">문제 1 / 10</div><div class="stars" id="stars">★★</div></div>
+      <div class="muted" id="conceptLabel">개념: 이등변삼각형</div>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="question" id="question"></div><div class="figure hidden" id="figure"></div>
+    <label class="muted">답 입력</label>
+    <input type="text" id="answer" placeholder="예: 50°" />
+    <div style="height:12px"></div>
+    <div class="muted" style="margin-bottom:6px">풀이 사진 (선택)</div>
+    <label class="upload">📷 <span>사진 촬영 또는 파일 선택</span><input id="photo" type="file" accept="image/*" capture="environment"></label>
+    <img id="preview" class="preview" alt="풀이 사진 미리보기" />
+    <div class="footerActions"><button class="ghost" id="skipBtn">사진 없이 제출</button><button id="submitBtn">제출</button></div>
+  </section>
+
+  <section class="card hidden" id="result">
+    <div class="title">진단 결과</div>
+    <div class="row"><div class="grow"><div class="muted">총점</div><div class="score" id="score">0점</div></div><div class="grow"><div class="muted">판정</div><div id="judge" style="font-size:18px;font-weight:800;margin-top:10px"></div></div></div>
+    <div id="concepts"></div>
+    <div class="note" id="analysisText"></div>
+    <div class="footerActions"><button class="secondary" id="reviewBtn">부족 개념 보완</button><button id="advancedBtn">심화 문제 시작</button></div>
+  </section>
+
+  <section class="card hidden" id="review">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="title" style="margin:0">맞춤 보완 학습</div>
+      <div class="muted" id="reviewPageLabel">1 / 3</div>
+    </div>
+    <div class="progress" style="margin:10px 0 16px"><div class="bar" id="reviewBar" style="width:33%"></div></div>
+
+    <div class="reviewPage" data-page="0">
+      <p><b>1. 내심과 각의 이등분선</b></p>
+      <div class="figure" id="reviewConceptFigure"></div>
+      <div class="note"><b>그림으로 이해하기</b><br>I는 삼각형의 세 <b>각의 이등분선</b>이 만나는 점입니다. 따라서 BI는 ∠ABC를 정확히 두 부분으로 나눕니다.<br><b>∠ABI = ∠IBC</b> 입니다.</div>
+      <p style="line-height:1.65"><b>핵심 체크</b><br>① 문제에서 “내심 I”가 보이면 각 꼭짓점과 I를 이은 선은 각의 이등분선입니다.<br>② 전체 각이 주어지면 반으로 나누어 필요한 각을 찾을 수 있습니다.</p>
+    </div>
+
+    <div class="reviewPage hidden" data-page="1">
+      <p><b>2. 내심에서 세 변까지의 거리</b></p>
+      <div class="figure" id="reviewDistanceFigure"></div>
+      <div class="note"><b>그림으로 이해하기</b><br>내심 I에서 세 변 AB, BC, CA에 수선을 내리면 그 길이는 모두 같습니다. 즉 내심은 <b>세 변에서 같은 거리</b>에 있습니다.</div>
+      <p style="line-height:1.65"><b>문제 풀이 순서</b><br>① I에서 각 변까지의 최단거리는 수선입니다.<br>② 세 수선의 길이는 서로 같습니다.<br>③ 길이 비교나 넓이 문제에서는 이 성질을 먼저 확인합니다.</p>
+    </div>
+
+    <div class="reviewPage hidden" data-page="2">
+      <div class="title">3. 확인 문제 <span class="stars">★★</span></div>
+      <div class="question">△ABC에서 I가 내심이고 ∠ABC=60°이면 ∠IBC는 몇 도인가?</div>
+      <div class="figure" id="reviewQuestionFigure"></div>
+      <div class="note" style="margin-bottom:10px"><b>생각 순서</b><br>① I가 내심 → BI는 ∠ABC의 이등분선<br>② ∠ABC=60° → 두 각의 크기는 서로 같음<br>③ ∠IBC의 크기를 계산</div>
+      <input id="reviewAnswer" type="text" placeholder="답 입력 (예: 30°)" />
+      <div style="height:10px"></div><button id="reviewCheck" style="width:100%">이해 확인</button>
+      <div id="reviewFeedback" style="margin-top:10px"></div>
+    </div>
+
+    <div class="footerActions" id="reviewNav">
+      <button class="ghost" id="reviewPrev">이전</button>
+      <button id="reviewNext">다음 개념</button>
+    </div>
+  </section>
+
+  <section class="card hidden" id="advanced">
+    <div class="title">심화 문제 샘플 <span class="stars">★★★★</span></div>
+    <div class="question">△ABC에서 AB=AC이고 I는 △ABC의 내심이다. ∠BIC=130°일 때 ∠A의 크기를 구하여라.</div><div class="figure" id="advancedFigure"></div>
+    <div class="muted">출제 의도는 제출 후 공개됩니다.</div>
+    <div style="height:10px"></div><input id="advancedAnswer" type="text" placeholder="답 입력" />
+    <div style="height:10px"></div><label class="upload">📷 <span>심화 풀이 사진 업로드</span><input type="file" accept="image/*" capture="environment"></label>
+    <div style="height:10px"></div><button id="advancedCheck" style="width:100%">심화 풀이 제출</button>
+    <div id="advancedFeedback" style="margin-top:12px"></div>
+  </section>
+</div>
+<script>
+const qs=[
+ {q:'AB = AC인 이등변삼각형 ABC에서 ∠B = 65°일 때 ∠A의 크기를 구하여라.',a:['50','50°'],c:'이등변삼각형',s:'★★',fig:{shape:'isosceles',equalSides:['AB','AC'],givenAngles:{B:65},unknownAngles:['A']}},
+ {q:'삼각형의 세 변의 수직이등분선이 만나는 점을 무엇이라 하는가?',a:['외심'],c:'외심',s:'★',fig:'circumcenter'},
+ {q:'삼각형의 세 각의 이등분선이 만나는 점을 무엇이라 하는가?',a:['내심'],c:'내심',s:'★',fig:'incenter'},
+ {q:'직각삼각형에서 빗변의 중점은 세 꼭짓점에서 같은 거리에 있다. 이 점은 어떤 중심인가?',a:['외심'],c:'외심',s:'★★',fig:'rightCircum'},
+ {q:'△ABC에서 I가 내심이고 ∠ABC=70°일 때 ∠IBC의 크기를 구하여라.',a:['35','35°'],c:'내심',s:'★★',fig:'incenter70'},
+ {q:'AB=AC인 △ABC에서 ∠A=40°이다. ∠B의 크기는?',a:['70','70°'],c:'이등변삼각형',s:'★★',fig:{shape:'isosceles',equalSides:['AB','AC'],givenAngles:{A:40},unknownAngles:['B']}},
+ {q:'외심 O에 대하여 OA=OB=OC인 이유를 가장 간단히 쓰시오.',a:['외심','같은 거리','수직이등분선'],c:'외심 성질',s:'★★★',loose:true,fig:'circumcenter'},
+ {q:'내심 I에서 세 변에 내린 수선의 길이는 서로 어떤 관계인가?',a:['같다','같음','서로 같다'],c:'내심 성질',s:'★★★',loose:true,fig:'incenterDistances'},
+ {q:'△ABC에서 I가 내심이고 ∠A=80°일 때 ∠BIC의 크기를 구하여라.',a:['130','130°'],c:'내심 응용',s:'★★★',fig:'incenter80'},
+ {q:'AB=AC인 △ABC에서 외심 O가 BC 위에 있다. ∠A의 크기를 구하여라.',a:['90','90°'],c:'조건 해석',s:'★★★★',fig:'diameterTriangle'}
+];
+let idx=0, correct=0, conceptScores={};
+const $=id=>document.getElementById(id);
+function show(id){$(id).classList.remove('hidden')}
+function hide(id){$(id).classList.add('hidden')}
+
+function dist(p,q){return Math.hypot(p.x-q.x,p.y-q.y)}
+function lineIntersection(p1,a1,p2,a2){
+  const v1={x:Math.cos(a1),y:-Math.sin(a1)}, v2={x:Math.cos(a2),y:-Math.sin(a2)};
+  const det=v1.x*(-v2.y)-v1.y*(-v2.x);
+  const rhs={x:p2.x-p1.x,y:p2.y-p1.y};
+  const t=(rhs.x*(-v2.y)-rhs.y*(-v2.x))/det;
+  return {x:p1.x+t*v1.x,y:p1.y+t*v1.y};
+}
+function triangleFromAngles(Bdeg,Cdeg){
+  const B={x:85,y:195}, C={x:275,y:195};
+  const A=lineIntersection(B,Bdeg*Math.PI/180,C,(180-Cdeg)*Math.PI/180);
+  return {A,B,C};
+}
+function incenterOf(t){
+  const a=dist(t.B,t.C), b=dist(t.C,t.A), c=dist(t.A,t.B), s=a+b+c;
+  return {x:(a*t.A.x+b*t.B.x+c*t.C.x)/s,y:(a*t.A.y+b*t.B.y+c*t.C.y)/s};
+}
+function circumcenterOf(t){
+  const {A,B,C}=t;
+  const d=2*(A.x*(B.y-C.y)+B.x*(C.y-A.y)+C.x*(A.y-B.y));
+  return {
+    x:((A.x*A.x+A.y*A.y)*(B.y-C.y)+(B.x*B.x+B.y*B.y)*(C.y-A.y)+(C.x*C.x+C.y*C.y)*(A.y-B.y))/d,
+    y:((A.x*A.x+A.y*A.y)*(C.x-B.x)+(B.x*B.x+B.y*B.y)*(A.x-C.x)+(C.x*C.x+C.y*C.y)*(B.x-A.x))/d
+  };
+}
+function footToLine(P,U,V){
+  const dx=V.x-U.x,dy=V.y-U.y;
+  const t=((P.x-U.x)*dx+(P.y-U.y)*dy)/(dx*dx+dy*dy);
+  return {x:U.x+t*dx,y:U.y+t*dy};
+}
+function tickOnSegment(P,Q){
+  const mx=(P.x+Q.x)/2,my=(P.y+Q.y)/2,dx=Q.x-P.x,dy=Q.y-P.y,l=Math.hypot(dx,dy);
+  const nx=-dy/l,ny=dx/l;
+  return `<line class="mark" x1="${(mx-6*nx).toFixed(1)}" y1="${(my-6*ny).toFixed(1)}" x2="${(mx+6*nx).toFixed(1)}" y2="${(my+6*ny).toFixed(1)}"/>`;
+}
+function triSvg(t){
+  return `<path class="main" d="M${t.A.x.toFixed(1)} ${t.A.y.toFixed(1)} L${t.B.x} ${t.B.y} L${t.C.x} ${t.C.y} Z"/>`+
+    `<text x="${(t.A.x-6).toFixed(1)}" y="${(t.A.y-10).toFixed(1)}">A</text>`+
+    `<text x="${(t.B.x-18).toFixed(1)}" y="${(t.B.y+17).toFixed(1)}">B</text>`+
+    `<text x="${(t.C.x+6).toFixed(1)}" y="${(t.C.y+17).toFixed(1)}">C</text>`;
+}
+function angleArc(v,p1,p2,r=27,label='',unknown=false){
+  const a1=Math.atan2(p1.y-v.y,p1.x-v.x),a2=Math.atan2(p2.y-v.y,p2.x-v.x);
+  let d=a2-a1; while(d<=-Math.PI)d+=2*Math.PI; while(d>Math.PI)d-=2*Math.PI;
+  const end=a1+d;
+  const s={x:v.x+r*Math.cos(a1),y:v.y+r*Math.sin(a1)}, e={x:v.x+r*Math.cos(end),y:v.y+r*Math.sin(end)};
+  const mid=a1+d/2, lp={x:v.x+(r+17)*Math.cos(mid),y:v.y+(r+17)*Math.sin(mid)};
+  return `<path class="mark" d="M${s.x.toFixed(1)} ${s.y.toFixed(1)} A${r} ${r} 0 0 ${d>0?1:0} ${e.x.toFixed(1)} ${e.y.toFixed(1)}"/>`+
+    `<text x="${(lp.x-10).toFixed(1)}" y="${(lp.y+5).toFixed(1)}" class="${unknown?'unknown':''}">${unknown?'?':label}</text>`;
+}
+function rightAngleAtFoot(F,U,V,P,size=8){
+  const dx=V.x-U.x,dy=V.y-U.y,l=Math.hypot(dx,dy),ux=dx/l,uy=dy/l;
+  let nx=-uy,ny=ux;
+  if((P.x-F.x)*nx+(P.y-F.y)*ny<0){nx=-nx;ny=-ny;}
+  const p1={x:F.x+ux*size,y:F.y+uy*size};
+  const p2={x:p1.x+nx*size,y:p1.y+ny*size};
+  const p3={x:F.x+nx*size,y:F.y+ny*size};
+  return `<path class="mark" d="M${p1.x.toFixed(1)} ${p1.y.toFixed(1)} L${p2.x.toFixed(1)} ${p2.y.toFixed(1)} L${p3.x.toFixed(1)} ${p3.y.toFixed(1)}"/>`;
+}
+function svgFigure(type){
+ const base=(inner,label='문제 도형')=>`<svg viewBox="0 0 360 230" role="img" aria-label="${label}">${inner}</svg>`;
+
+ if(typeof type==='object' && type.shape==='isosceles'){
+   const g=type.givenAngles||{};
+   let Adeg=g.A;
+   if(Adeg===undefined && g.B!==undefined) Adeg=180-2*g.B;
+   if(Adeg===undefined && g.C!==undefined) Adeg=180-2*g.C;
+   if(Adeg===undefined) Adeg=60;
+   const baseAngle=(180-Adeg)/2, h=145, half=Math.min(105,Math.max(48,h/Math.tan(baseAngle*Math.PI/180)));
+   const t={A:{x:180,y:45},B:{x:180-half,y:190},C:{x:180+half,y:190}};
+   let marks=triSvg(t);
+   if((type.equalSides||[]).includes('AB')&&(type.equalSides||[]).includes('AC')) marks+=tickOnSegment(t.A,t.B)+tickOnSegment(t.A,t.C);
+   if(g.A!==undefined) marks+=angleArc(t.A,t.B,t.C,25,`${g.A}°`);
+   if(g.B!==undefined) marks+=angleArc(t.B,t.C,t.A,25,`${g.B}°`);
+   if(g.C!==undefined) marks+=angleArc(t.C,t.A,t.B,25,`${g.C}°`);
+   (type.unknownAngles||[]).forEach(v=>{
+     if(v==='A') marks+=angleArc(t.A,t.B,t.C,37,'',true);
+     if(v==='B') marks+=angleArc(t.B,t.C,t.A,37,'',true);
+     if(v==='C') marks+=angleArc(t.C,t.A,t.B,37,'',true);
+   });
+   return base(marks,'조건과 각도가 일치하는 이등변삼각형 ABC');
+ }
+
+ if(type==='circumcenter'){
+   const t=triangleFromAngles(58,67), O=circumcenterOf(t);
+   const verts=[['A',t.A],['B',t.B],['C',t.C]];
+   let s=triSvg(t);
+   [[t.A,t.B],[t.B,t.C],[t.C,t.A]].forEach(([P,Q])=>{
+     const M={x:(P.x+Q.x)/2,y:(P.y+Q.y)/2},dx=Q.x-P.x,dy=Q.y-P.y,l=Math.hypot(dx,dy),nx=-dy/l,ny=dx/l;
+     s+=`<line class="guide" x1="${(M.x-85*nx).toFixed(1)}" y1="${(M.y-85*ny).toFixed(1)}" x2="${(M.x+85*nx).toFixed(1)}" y2="${(M.y+85*ny).toFixed(1)}"/>`;
+   });
+   verts.forEach(([,P])=>s+=`<line class="mark" x1="${O.x.toFixed(1)}" y1="${O.y.toFixed(1)}" x2="${P.x.toFixed(1)}" y2="${P.y.toFixed(1)}"/>`);
+   s+=`<circle class="point" cx="${O.x.toFixed(1)}" cy="${O.y.toFixed(1)}" r="5"/><text x="${(O.x+9).toFixed(1)}" y="${(O.y-5).toFixed(1)}">O</text>`;
+   return base(s,'세 변의 수직이등분선과 외심 O');
+ }
+
+ if(type==='incenter'||type==='incenter70'||type==='incenter80'){
+   let t;
+   if(type==='incenter70') t=triangleFromAngles(70,50); // A=60, B=70, C=50
+   else if(type==='incenter80') t=triangleFromAngles(55,45); // A=80
+   else t=triangleFromAngles(55,65);
+   const I=incenterOf(t);
+   let s=triSvg(t)+`<line class="mark" x1="${t.A.x.toFixed(1)}" y1="${t.A.y.toFixed(1)}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/><line class="mark" x1="${t.B.x}" y1="${t.B.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/><line class="mark" x1="${t.C.x}" y1="${t.C.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/><circle class="point" cx="${I.x.toFixed(1)}" cy="${I.y.toFixed(1)}" r="5"/><text x="${(I.x+9).toFixed(1)}" y="${(I.y-5).toFixed(1)}">I</text>`;
+   if(type==='incenter70') s+=angleArc(t.B,t.C,t.A,27,'70°');
+   if(type==='incenter80') s+=angleArc(t.A,t.B,t.C,27,'80°');
+   return base(s,'각의 이등분선과 내심 I');
+ }
+
+ if(type==='incenterDistances'){
+   const t=triangleFromAngles(57,48), I=incenterOf(t);
+   const feet=[footToLine(I,t.A,t.B),footToLine(I,t.B,t.C),footToLine(I,t.C,t.A)];
+   let s=triSvg(t)+`<circle class="point" cx="${I.x.toFixed(1)}" cy="${I.y.toFixed(1)}" r="5"/><text x="${(I.x+9).toFixed(1)}" y="${(I.y-5).toFixed(1)}">I</text>`;
+   const sides=[[t.A,t.B],[t.B,t.C],[t.C,t.A]];
+   feet.forEach((F,i)=>{s+=`<line class="guide" x1="${I.x.toFixed(1)}" y1="${I.y.toFixed(1)}" x2="${F.x.toFixed(1)}" y2="${F.y.toFixed(1)}"/><circle cx="${F.x.toFixed(1)}" cy="${F.y.toFixed(1)}" r="2.5" class="point"/>`+rightAngleAtFoot(F,sides[i][0],sides[i][1],I);});
+   return base(s,'내심 I에서 세 변에 내린 수선');
+ }
+
+ if(type==='rightCircum'){
+   const A={x:70,y:45},B={x:70,y:190},C={x:305,y:190},O={x:(A.x+C.x)/2,y:(A.y+C.y)/2};
+   let s=`<path class="main" d="M${A.x} ${A.y} L${B.x} ${B.y} L${C.x} ${C.y} Z"/><text x="57" y="39">A</text><text x="50" y="210">B</text><text x="310" y="210">C</text><path class="mark" d="M70 173 h17 v17"/>`;
+   [A,B,C].forEach(P=>s+=`<line class="mark" x1="${O.x}" y1="${O.y}" x2="${P.x}" y2="${P.y}"/>`);
+   s+=`<circle class="point" cx="${O.x}" cy="${O.y}" r="5"/><text x="${O.x+9}" y="${O.y-5}">O</text>`;
+   return base(s,'직각삼각형의 빗변 중점인 외심 O');
+ }
+
+ if(type==='diameterTriangle'){
+   const O={x:180,y:180},B={x:60,y:180},C={x:300,y:180},A={x:180,y:60};
+   let s=`<line class="main" x1="${B.x}" y1="${B.y}" x2="${C.x}" y2="${C.y}"/><line class="main" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/><line class="main" x1="${A.x}" y1="${A.y}" x2="${C.x}" y2="${C.y}"/>${tickOnSegment(A,B)}${tickOnSegment(A,C)}`;
+   [A,B,C].forEach(P=>s+=`<line class="guide" x1="${O.x}" y1="${O.y}" x2="${P.x}" y2="${P.y}"/>`);
+   s+=`<circle class="point" cx="${O.x}" cy="${O.y}" r="5"/><text x="188" y="176">O</text><text x="174" y="50">A</text><text x="45" y="200">B</text><text x="306" y="200">C</text>`;
+   return base(s,'AB=AC이고 외심 O가 BC 위에 있는 삼각형 ABC');
+ }
+
+ if(type==='reviewIncenterConcept'){
+   const t=triangleFromAngles(60,50), I=incenterOf(t);
+   const F1=footToLine(I,t.A,t.B), F2=footToLine(I,t.B,t.C), F3=footToLine(I,t.C,t.A);
+   let s=triSvg(t);
+   s+=`<line class="mark" x1="${t.A.x.toFixed(1)}" y1="${t.A.y.toFixed(1)}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/>`;
+   s+=`<line class="mark" x1="${t.B.x}" y1="${t.B.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/>`;
+   s+=`<line class="mark" x1="${t.C.x}" y1="${t.C.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/>`;
+   s+=`<circle class="point" cx="${I.x.toFixed(1)}" cy="${I.y.toFixed(1)}" r="5"/><text x="${(I.x+9).toFixed(1)}" y="${(I.y-5).toFixed(1)}">I</text>`;
+   s+=angleArc(t.B,t.C,I,25,'30°')+angleArc(t.B,I,t.A,34,'30°');
+   [[F1,t.A,t.B],[F2,t.B,t.C],[F3,t.C,t.A]].forEach(([F,U,V])=>{
+     s+=`<line class="guide" x1="${I.x.toFixed(1)}" y1="${I.y.toFixed(1)}" x2="${F.x.toFixed(1)}" y2="${F.y.toFixed(1)}"/>`+rightAngleAtFoot(F,U,V,I,7);
+   });
+   s+=`<text x="20" y="22" style="font-size:12px;fill:#6b7280">BI는 ∠B를 똑같이 나눔</text>`;
+   return base(s,'내심 I와 각의 이등분선, 세 변까지의 같은 거리 설명 도형');
+ }
+
+ if(type==='reviewIncenterQuestion'){
+   const t=triangleFromAngles(60,50), I=incenterOf(t);
+   let s=triSvg(t);
+   s+=`<line class="mark" x1="${t.B.x}" y1="${t.B.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/>`;
+   s+=`<circle class="point" cx="${I.x.toFixed(1)}" cy="${I.y.toFixed(1)}" r="5"/><text x="${(I.x+9).toFixed(1)}" y="${(I.y-5).toFixed(1)}">I</text>`;
+   s+=angleArc(t.B,t.C,t.A,28,'60°');
+   s+=angleArc(t.B,t.C,I,42,'',true);
+   return base(s,'내심 I와 각 B가 60도인 확인 문제 도형');
+ }
+
+ if(type==='reviewIncenterSolution'){
+   const t=triangleFromAngles(60,50), I=incenterOf(t);
+   let s=triSvg(t);
+   s+=`<line class="mark" x1="${t.B.x}" y1="${t.B.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/>`;
+   s+=`<circle class="point" cx="${I.x.toFixed(1)}" cy="${I.y.toFixed(1)}" r="5"/><text x="${(I.x+9).toFixed(1)}" y="${(I.y-5).toFixed(1)}">I</text>`;
+   s+=angleArc(t.B,t.C,I,28,'30°')+angleArc(t.B,I,t.A,39,'30°');
+   s+=`<text x="18" y="22" style="font-size:12px;fill:#059669">60° ÷ 2 = 30°</text>`;
+   return base(s,'각 B 60도를 내심의 이등분선이 30도씩 나누는 정답 설명 도형');
+ }
+
+ if(type==='advancedIncenter'){
+   const Adeg=80, baseAngle=50, h=145, half=h/Math.tan(baseAngle*Math.PI/180);
+   const t={A:{x:180,y:45},B:{x:180-half,y:190},C:{x:180+half,y:190}}, I=incenterOf(t);
+   let s=triSvg(t)+tickOnSegment(t.A,t.B)+tickOnSegment(t.A,t.C);
+   s+=`<line class="mark" x1="${t.A.x}" y1="${t.A.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/><line class="mark" x1="${t.B.x.toFixed(1)}" y1="${t.B.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/><line class="mark" x1="${t.C.x.toFixed(1)}" y1="${t.C.y}" x2="${I.x.toFixed(1)}" y2="${I.y.toFixed(1)}"/><circle class="point" cx="${I.x.toFixed(1)}" cy="${I.y.toFixed(1)}" r="5"/><text x="${(I.x+9).toFixed(1)}" y="${(I.y-5).toFixed(1)}">I</text>`;
+   s+=angleArc(I,t.B,t.C,26,'130°');
+   s+=angleArc(t.A,t.B,t.C,34,'',true);
+   return base(s,'AB=AC, 내심 I, 각 BIC가 130도인 삼각형 ABC');
+ }
+ return '';
+}
+
+function renderFigure(type,target='figure'){
+ const el=$(target), svg=svgFigure(type);
+ if(!svg){el.innerHTML='';el.classList.add('hidden');return}
+ el.innerHTML=svg;el.classList.remove('hidden');
+}
+function loadQ(){let x=qs[idx];$('qno').textContent=`문제 ${idx+1} / 10`;$('stars').textContent=x.s;$('conceptLabel').textContent='개념: '+x.c;$('question').textContent=x.q;renderFigure(x.fig);$('bar').style.width=((idx+1)*10)+'%';$('answer').value='';$('preview').style.display='none';$('photo').value=''}
+function submit(){let x=qs[idx],v=$('answer').value.trim();let ok=x.loose?x.a.some(k=>v.includes(k)):x.a.includes(v);correct+=ok?1:0;conceptScores[x.c]=(conceptScores[x.c]||{n:0,k:0});conceptScores[x.c].n++;conceptScores[x.c].k+=ok?1:0;idx++; if(idx<qs.length) loadQ(); else finish()}
+function finish(){hide('quiz');show('result');let sc=correct*10;$('score').textContent=sc+'점';let pass=sc>=90;$('judge').textContent=pass?'심화 진입 가능':'개념 보완 필요';$('judge').className=pass?'ok':'warn';$('advancedBtn').disabled=!pass;$('advancedBtn').style.opacity=pass?1:.45;let html='<div class="title" style="margin-top:14px">개념별 상태</div>';Object.entries(conceptScores).forEach(([k,v])=>{let p=Math.round(v.k/v.n*100);html+=`<div class="concept"><div><div style="display:flex;justify-content:space-between"><span>${k}</span><span>${p}</span></div><div class="mini"><i style="width:${p}%"></i></div></div><div class="${p>=90?'ok':p>=70?'warn':'bad'}">${p>=90?'충분':p>=70?'보완':'취약'}</div></div>`});$('concepts').innerHTML=html;$('analysisText').innerHTML=pass?'기본 개념이 안정적입니다. 심화 단계에서는 여러 성질을 결합하는 문제와 풀이 논리성을 확인합니다.':'오답이 나온 개념을 우선 보완한 뒤 90점 이상을 확인하고 심화 단계로 이동하도록 설계합니다. 실제 앱에서는 풀이 사진을 AI가 분석해 <b>개념 부족 / 조건 해석 / 계산 실수 / 풀이 전략</b>으로 분류합니다.'}
+$('startBtn').onclick=()=>{hide('setup');show('quiz');loadQ()};$('submitBtn').onclick=submit;$('skipBtn').onclick=submit;
+$('photo').onchange=e=>{let f=e.target.files[0];if(!f)return;let u=URL.createObjectURL(f);$('preview').src=u;$('preview').style.display='block'};
+let reviewPage=0;
+function showReviewPage(n){
+  reviewPage=Math.max(0,Math.min(2,n));
+  document.querySelectorAll('.reviewPage').forEach((el,i)=>el.classList.toggle('hidden',i!==reviewPage));
+  $('reviewPageLabel').textContent=(reviewPage+1)+' / 3';
+  $('reviewBar').style.width=((reviewPage+1)/3*100)+'%';
+  $('reviewPrev').disabled=reviewPage===0;
+  $('reviewPrev').style.opacity=reviewPage===0?.45:1;
+  $('reviewNext').textContent=reviewPage===1?'확인 문제로':reviewPage===2?'보완 학습 완료':'다음 개념';
+  if(reviewPage===0) renderFigure('reviewIncenterConcept','reviewConceptFigure');
+  if(reviewPage===1) renderFigure('incenterDistances','reviewDistanceFigure');
+  if(reviewPage===2) renderFigure('reviewIncenterQuestion','reviewQuestionFigure');
+}
+$('reviewBtn').onclick=()=>{show('review');showReviewPage(0)};
+$('reviewPrev').onclick=()=>showReviewPage(reviewPage-1);
+$('reviewNext').onclick=()=>{if(reviewPage<2)showReviewPage(reviewPage+1);else hide('review')};
+$('reviewCheck').onclick=()=>{let v=$('reviewAnswer').value.trim();let ok=v==='30'||v==='30°';$('reviewFeedback').innerHTML=(ok?'<span class="ok"><b>정답입니다.</b> BI는 ∠ABC의 이등분선이므로 60°를 30°와 30°로 나눕니다.</span>':'<span class="warn"><b>다시 확인해 보세요.</b> I가 내심이면 BI는 ∠ABC의 이등분선입니다. 60°를 두 개의 같은 각으로 나누어 보세요.</span>')+'<div class="figure" id="reviewSolutionFigure" style="margin-top:10px"></div><div class="note" style="margin-top:8px"><b>풀이 설명:</b> ∠ABI = ∠IBC이고, ∠ABC = ∠ABI + ∠IBC = 60°입니다. 따라서 각각 30°입니다.</div>';renderFigure('reviewIncenterSolution','reviewSolutionFigure')};
+$('advancedBtn').onclick=()=>{show('advanced');renderFigure('advancedIncenter','advancedFigure')};$('advancedCheck').onclick=()=>{let v=$('advancedAnswer').value.trim();let ok=v==='80'||v==='80°';$('advancedFeedback').innerHTML=(ok?'<span class="ok"><b>정답입니다.</b></span>':'<span class="bad"><b>오답입니다.</b></span>')+'<div class="note" style="margin-top:8px"><b>출제 의도:</b> 내심의 성질 ∠BIC = 90° + 1/2∠A 를 활용하거나 직접 각을 분해해 관계를 만들 수 있는지 확인합니다. 실제 버전에서는 업로드한 풀이 사진에서 어느 단계에서 논리가 끊겼는지 분석합니다.</div>'};
+</script>
+</body>
+</html>
